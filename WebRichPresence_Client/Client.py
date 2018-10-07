@@ -83,6 +83,7 @@ class Client(object):
             self._initialize_rpc(app_id)
         try:
             self._rpc.update(**presence)
+            self._logger.info(f"App {app_id} updated presence.")
         except TypeError:
             self._logger.warning(f"App {app_id} sent invalid presence object.")
 
@@ -131,6 +132,7 @@ class Client(object):
             self._current_app_id = None
             self._rpc.close()
             self._rpc = None
+            self._logger.info(f"App {appid} cleared presence info.")
 
     def _authenticate(self):
         """
