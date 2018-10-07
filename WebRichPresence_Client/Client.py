@@ -1,10 +1,11 @@
-import os
 import json
 import logging
+import os
 from typing import Dict, Optional, Callable
 
-from socketIO_client import SocketIO
 from pypresence import Presence
+from socketIO_client import SocketIO
+
 
 class Client(object):
     """
@@ -34,6 +35,7 @@ class Client(object):
         self._current_app_id = None
         self._rpc = None
         self._logger = logging.getLogger("WebRichPresence_Client")
+        logging.getLogger("socketIO-client").setLevel(logging.ERROR)
         self._logger.setLevel(logging.INFO)
 
         # Define all the callback functions, so we don't have to write self._socket.on(...) a million times
@@ -92,6 +94,17 @@ class Client(object):
         Handles the authenticated event from the API server.
         """
         self._logger.info("Connected and authenticated.")
+
+    def _authenticate(self):
+        """
+        Handles authenticating with the API server.
+        """
+        if not self._config["token"]:
+            self._logger.info("No token defined, retrieving new one from server...")
+            self._socket.emit("new_auth")
+        else:
+            self._logger.info(f"Authenticating with existing token {self._config['token']}...")
+            self._socket.emit("auth", self._config["token"])
         
     def run(self):
         """
@@ -99,14 +112,9 @@ class Client(object):
         """
         self._logger.info("Connecting to WebRichPresence...")
         self._socket = SocketIO(self._hostname, self._port)
+        self._authenticate()
         
         for callback in self._callbacks.items():
             self._socket.on(callback[0], callback[1])
 
-        if not self._config["token"]:
-            self._logger.info("No token defined, retrieving new one from server...")
-            self._socket.emit("new_auth")
-        else:
-            self._logger.info(f"Authenticating with existing token {self._config['token']}...")
-            self._socket.emit("auth", self._config["token"])
         self._socket.wait()

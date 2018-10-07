@@ -9,6 +9,7 @@ logging.basicConfig(format="{%(asctime)s} (%(name)s) [%(levelname)s]: %(message)
                     datefmt="%x, %X",
                     level=logging.INFO)
 
+
 @click.command()
 @click.option("--port", default=7200, help="Port that the WebRichPresence server is running on.")
 @click.option("--hostname", default="localhost", help="Hostname the WebRichPresence server is running on.")
