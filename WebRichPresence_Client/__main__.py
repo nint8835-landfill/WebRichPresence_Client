@@ -11,8 +11,8 @@ logging.basicConfig(format="{%(asctime)s} (%(name)s) [%(levelname)s]: %(message)
 
 
 @click.command()
-@click.option("--port", default=7200, help="Port that the WebRichPresence server is running on.")
-@click.option("--hostname", default="localhost", help="Hostname the WebRichPresence server is running on.")
+@click.option("--port", default=80, help="Port that the WebRichPresence server is running on.")
+@click.option("--hostname", default="webrichpresence.argonskyline.com", help="Hostname the WebRichPresence server is running on.")
 @click.option("--config", default=os.path.join(os.path.expanduser("~"), ".webrichpresence_config.json"), help="Location of the WebRichPresence client config to use.")
 def run(port, hostname, config):
     client = Client(port, hostname, config)

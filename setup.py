@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="WebRichPresence_Client",
-    version="0.1",
+    version="1.0",
     author="Riley Flynn",
     author_email="riley@rileyflynn.me",
     description="Simple command-line client for the WebRichPresence service.",
