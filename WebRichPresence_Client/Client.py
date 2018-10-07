@@ -7,6 +7,9 @@ from socketIO_client import SocketIO
 from pypresence import Presence
 
 class Client(object):
+    """
+    Main client object for WebRichPresence_Client. Handles all interactions between the API and Discord.
+    """
 
     _port: int
     _hostname: str
@@ -19,6 +22,12 @@ class Client(object):
     _rpc: Presence
 
     def __init__(self, port: int, hostname: str, config_path: str):
+        """
+        Initializes a new Client.
+        :param port: The port that the API server runs on
+        :param hostname: The hostname (or IP address) the API server runs on
+        :param config_path: The path to the config file where the token will be stored
+        """
         self._port = port
         self._hostname = hostname
         self._config_path = config_path
@@ -27,6 +36,7 @@ class Client(object):
         self._logger = logging.getLogger("WebRichPresence_Client")
         self._logger.setLevel(logging.INFO)
 
+        # Define all the callback functions, so we don't have to write self._socket.on(...) a million times
         self._callbacks = {
             "authenticated": self._on_authenticated,
             "new_token": self._on_new_token,
@@ -43,6 +53,10 @@ class Client(object):
                 self._config = json.load(f)
 
     def _initialize_rpc(self, app_id: str):
+        """
+        Initializes the connection to Discord RPC.
+        :param app_id: The app ID that will be used for RPC
+        """
         if self._rpc:
             self._rpc.close()
         self._rpc = Presence(app_id)
@@ -50,11 +64,20 @@ class Client(object):
         self._current_app_id = app_id
     
     def _on_presence(self, app_id: str, presence: dict):
+        """
+        Handles the presence event from the API server.
+        :param app_id: The app ID to use for the presence
+        :param presence: The presence details
+        """
         if app_id != self._current_app_id:
             self._initialize_rpc(app_id)
         self._rpc.update(**presence)
     
     def _on_new_token(self, new_token: str):
+        """
+        Handles the new token event from the API server.
+        :param new_token: The new token
+        """
         self._config["token"] = new_token
 
         with open(self._config_path, "w") as f:
@@ -65,9 +88,15 @@ class Client(object):
         self._logger.info("Provide this token to all apps you wish to use with WebRichPresence.")
     
     def _on_authenticated(self, _):
+        """
+        Handles the authenticated event from the API server.
+        """
         self._logger.info("Connected and authenticated.")
         
     def run(self):
+        """
+        Runs the client and connects to the API server.
+        """
         self._logger.info("Connecting to WebRichPresence...")
         self._socket = SocketIO(self._hostname, self._port)
         
