@@ -45,7 +45,8 @@ class Client(object):
             "new_token": self._on_new_token,
             "presence": self._on_presence,
             "connect": self._on_connected,
-            "reconnect": self._on_reconnect
+            "reconnect": self._on_reconnect,
+            "clear": self._on_clear
         }
 
         self._presence_namespace = type("PresenceNamespace", (BaseNamespace, ), {
@@ -80,7 +81,10 @@ class Client(object):
         """
         if app_id != self._current_app_id:
             self._initialize_rpc(app_id)
-        self._rpc.update(**presence)
+        try:
+            self._rpc.update(**presence)
+        except TypeError:
+            self._logger.warning(f"App {app_id} sent invalid presence object.")
 
     def _on_new_token(self, new_token: str):
         """
@@ -115,6 +119,18 @@ class Client(object):
         """
         self._logger.info("Regained connection to the API server. Re-authenticating...")
         self._authenticate()
+
+    def _on_clear(self, appid):
+        """
+        Handles the clear event from the API server.
+        :param appid: The appid requesting to be cleared
+        """
+        if appid != self._current_app_id:
+            self._logger.warning(f"Non-current app {appid} attempted to clear presence. Ignoring.")
+        else:
+            self._current_app_id = None
+            self._rpc.close()
+            self._rpc = None
 
     def _authenticate(self):
         """
