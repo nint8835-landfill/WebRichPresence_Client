@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from typing import Dict, Optional, Callable, Type
 
 from pypresence import Presence
@@ -79,13 +80,16 @@ class Client(object):
         :param app_id: The app ID to use for the presence
         :param presence: The presence details
         """
-        if app_id != self._current_app_id:
+        if app_id != self._current_app_id or self._rpc is None:
             self._initialize_rpc(app_id)
         try:
             self._rpc.update(**presence)
             self._logger.info(f"App {app_id} updated presence.")
         except TypeError:
             self._logger.warning(f"App {app_id} sent invalid presence object.")
+        except IOError:
+            time.sleep(15)
+            self._on_presence(app_id, presence)
 
     def _on_new_token(self, new_token: str):
         """
